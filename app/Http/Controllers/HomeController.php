@@ -30,9 +30,15 @@ class HomeController extends Controller
     {
         if (auth()->user()->hasRole('user')) {
             $vendorAvailability = VendorAvailability::get();
-            return view('home', compact('vendorAvailability'));
+            $bookings = Booking::where('user_id', auth()->user()->id)->get();
+            return view('home', compact('vendorAvailability','bookings'));
         }
-        return view('home');
+        if (auth()->user()->hasRole('vendor')) {
+            $vendorAvailability = VendorAvailability::where('vendor_id', auth()->user()->id)->get();
+            $vendorRescheduleOff = VendorRescheduleOff::where('vendor_id', auth()->user()->id)->get();
+            $bookings = Booking::where('vendor_id', auth()->user()->id)->get();
+            return view('home', compact('vendorAvailability', 'vendorRescheduleOff','bookings'));
+        }
     }
     public function availability()
     {
