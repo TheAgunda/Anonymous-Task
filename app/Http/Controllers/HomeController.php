@@ -109,7 +109,21 @@ class HomeController extends Controller
             }
 
             $booking_weekday_name = Carbon::parse($request->booking_date)->format('l');
-            print_r($booking_weekday_name);
+            print_r('<pre>');
+            print_r($request->all());
+
+            $rescheduleOff = VendorRescheduleOff::where('date', $request->booking_date)->where('startTime', '<=', $request->booking_time)->where('endTime', '>=', $request->booking_time)->get();
+            if (count($rescheduleOff) > 0) {
+                return redirect()->back()->with('status', 'Vendor not available for given time slot.');
+            }
+            $vendorAvailability = VendorAvailability::where('weekday_name', strtolower($booking_weekday_name))->where('startTime', '<=', $request->booking_time)->where('endTime', '>=', $request->booking_time)->get();
+            if (count($vendorAvailability) == 0) {
+                return redirect()->back()->with('status', 'Vendor not available for given time slot.');
+            }
+            $vendorAvailabilityData = $vendorAvailability->first();
+            print_r($vendorAvailabilityData);
+
+
         } catch (\Exception $e) {
             return redirect()->back()->with('status',  $e->getMessage());
         }
