@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Booking;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Models\VendorAvailability;
@@ -121,9 +122,17 @@ class HomeController extends Controller
                 return redirect()->back()->with('status', 'Vendor not available for given time slot.');
             }
             $vendorAvailabilityData = $vendorAvailability->first();
-            print_r($vendorAvailabilityData);
-
-
+            $booking = new Booking();
+            $booking->vendor_id = $vendorAvailabilityData->vendor_id;
+            $booking->user_id = auth()->user()->id;
+            $booking->weekday_name = $vendorAvailabilityData->weekday_name;
+            $booking->startTime = $vendorAvailabilityData->startTime;
+            $booking->endTime = $vendorAvailabilityData->endTime;
+            $booking->booking_time = $request->booking_time;
+            $status = $booking->save();
+            if ($status) {
+                return redirect()->back()->with('status', 'Booking Success.');
+            }
         } catch (\Exception $e) {
             return redirect()->back()->with('status',  $e->getMessage());
         }
